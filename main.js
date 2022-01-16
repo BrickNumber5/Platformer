@@ -57,7 +57,7 @@ const player = {
     ctx.stroke( );
     
     player.drawLeg( animationFrame );
-    player.drawLeg( ( animationFrame + 0.5 ) % 1 );
+    player.drawLeg( ( animationFrame + 0.25 ) % 1 );
     
     // Head
     ctx.lineWidth *= 2;
@@ -69,8 +69,8 @@ const player = {
   drawLeg( animationFrame ) {
     const root = { x: player.x, y: player.y + 5 };
     
-    const a = -( Math.sin( 2 * Math.PI * animationFrame ) - (3/2) ) / 6;
-    const b = a - ( Math.sin( 4 * Math.PI * animationFrame ) - 1 ) / 8;
+    const a = -( Math.sin( 4 * Math.PI * animationFrame ) - (3/2) ) / 6;
+    const b = a - ( Math.sin( 2 * Math.PI * animationFrame ) - 1 ) / 8;
     
     const knee = {
       x: root.x + 5 * Math.cos( 2 * Math.PI * a ),
