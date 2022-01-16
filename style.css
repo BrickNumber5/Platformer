@@ -1,0 +1,12 @@
+body, body * {
+  all: unset;
+}
+
+body {
+  background: #111;
+}
+
+.main {
+  position: absolute;
+  inset: 0;
+}
