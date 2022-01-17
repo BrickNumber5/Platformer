@@ -47,10 +47,10 @@ const player = {
   computeAngles: ( ) => ( {
     main: 0,
     head: 0,
-    back_leg: [ -Math.PI / 5, Math.PI / 5 ],
-    front_leg: [ Math.PI / 5, Math.PI / 5 ],
-    back_arm: [ 1, -Math.PI / 2 ],
-    front_arm: [ -0.5, -Math.PI / 2 ]
+    back_leg: [ 0, 0 ],
+    front_leg: [ 0, 0 ],
+    back_arm: [ 0, 0 ],
+    front_arm: [ 0, 0 ]
   } ),
   draw: ( animationFrame ) => {
     ctx.strokeStyle = "#ccc";
@@ -60,13 +60,23 @@ const player = {
     
     const angles = player.computeAngles( );
     
-    const head = { x: player.x + Math.cos( angles.main - Math.PI / 2 ), y: player.y + Math.sin( angles.main - Math.PI / 2 ) };
-    const shoulders = { x: player.x + 0.5 * Math.cos( angles.main - Math.PI / 2 ), y: player.y + 0.5 * Math.sin( angles.main - Math.PI / 2 ) };
-    const hips = { x: player.x + Math.cos( angles.main + Math.PI / 2 ), y: player.y + Math.sin( angles.main + Math.PI / 2 ) };
+    const shoulders = {
+      x: player.x + 0.5 * Math.cos( angles.main - Math.PI / 2 ),
+      y: player.y + 0.5 * Math.sin( angles.main - Math.PI / 2 )
+    };
+    const head = {
+      x: shoulders.x + 0.5 * Math.cos( angles.main + angles.head - Math.PI / 2 ),
+      y: shoulders.y + 0.5 * Math.sin( angles.main + angles.head - Math.PI / 2 )
+    };
+    const hips = {
+      x: player.x + Math.cos( angles.main + Math.PI / 2 ),
+      y: player.y + Math.sin( angles.main + Math.PI / 2 )
+    };
     
     // Body
     ctx.beginPath( );
     ctx.moveTo( ...camera.transform( head.x, head.y ) );
+    ctx.lineTo( ...camera.transform( shoulders.x, shoulders.y ) );
     ctx.lineTo( ...camera.transform( hips.x, hips.y ) );
     ctx.stroke( );
     
