@@ -2,7 +2,7 @@ const cnv = document.querySelector( ".main canvas" );
 const ctx = cnv.getContext( "2d" );
 let width, height;
 
-const scale = 5;
+const scale = 50;
 
 console.log( cnv );
 
@@ -24,7 +24,7 @@ function draw( timeStamp ) {
   previousTimeStamp = timeStamp;
   
   ctx.clearRect( 0, 0, width, height );
-  player.draw( ( timeStamp % 10000 ) / 10000 );
+  player.draw( timeStamp );
   
   requestAnimationFrame( draw );
 }
@@ -44,48 +44,98 @@ const camera = {
 const player = {
   x: 0,
   y: 0,
+  computeAngles: ( ) => ( {
+    main: 0,
+    head: 0,
+    back_leg: [ -Math.PI / 5, Math.PI / 5 ],
+    front_leg: [ Math.PI / 5, Math.PI / 5 ],
+    back_arm: [ 1, -Math.PI / 2 ],
+    front_arm: [ -0.5, -Math.PI / 2 ]
+  } ),
   draw: ( animationFrame ) => {
     ctx.strokeStyle = "#ccc";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.lineWidth = 2 * camera.calculateScale( );
+    ctx.lineWidth = camera.calculateScale( ) / 3;
+    
+    const angles = player.computeAngles( );
+    
+    const head = { x: player.x + Math.cos( angles.main - Math.PI / 2 ), y: player.y + Math.sin( angles.main - Math.PI / 2 ) };
+    const shoulders = { x: player.x + 0.5 * Math.cos( angles.main - Math.PI / 2 ), y: player.y + 0.5 * Math.sin( angles.main - Math.PI / 2 ) };
+    const hips = { x: player.x + Math.cos( angles.main + Math.PI / 2 ), y: player.y + Math.sin( angles.main + Math.PI / 2 ) };
     
     // Body
     ctx.beginPath( );
-    ctx.moveTo( ...camera.transform( player.x, player.y + 5 ) );
-    ctx.lineTo( ...camera.transform( player.x, player.y - 5 ) );
+    ctx.moveTo( ...camera.transform( head.x, head.y ) );
+    ctx.lineTo( ...camera.transform( hips.x, hips.y ) );
     ctx.stroke( );
     
-    player.drawLeg( animationFrame );
-    player.drawLeg( ( animationFrame + 0.25 ) % 1 );
+    // Back Leg
+    const back_knee = {
+      x: hips.x + Math.cos( angles.main + angles.back_leg[ 0 ] + Math.PI / 2 ),
+      y: hips.y + Math.sin( angles.main + angles.back_leg[ 0 ] + Math.PI / 2 )
+    };
+    const back_foot = {
+      x: back_knee.x + Math.cos( angles.main + angles.back_leg[ 0 ] + angles.back_leg[ 1 ] + Math.PI / 2 ),
+      y: back_knee.y + Math.sin( angles.main + angles.back_leg[ 0 ] + angles.back_leg[ 1 ] + Math.PI / 2 )
+    };
+    ctx.beginPath( );
+    ctx.moveTo( ...camera.transform( hips.x, hips.y ) );
+    ctx.lineTo( ...camera.transform( back_knee.x, back_knee.y ) );
+    ctx.lineTo( ...camera.transform( back_foot.x, back_foot.y ) );
+    ctx.stroke( );
+    
+    // Front Leg
+    const front_knee = {
+      x: hips.x + Math.cos( angles.main + angles.front_leg[ 0 ] + Math.PI / 2 ),
+      y: hips.y + Math.sin( angles.main + angles.front_leg[ 0 ] + Math.PI / 2 )
+    };
+    const front_foot = {
+      x: front_knee.x + Math.cos( angles.main + angles.front_leg[ 0 ] + angles.front_leg[ 1 ] + Math.PI / 2 ),
+      y: front_knee.y + Math.sin( angles.main + angles.front_leg[ 0 ] + angles.front_leg[ 1 ] + Math.PI / 2 )
+    };
+    ctx.beginPath( );
+    ctx.moveTo( ...camera.transform( hips.x, hips.y ) );
+    ctx.lineTo( ...camera.transform( front_knee.x, front_knee.y ) );
+    ctx.lineTo( ...camera.transform( front_foot.x, front_foot.y ) );
+    ctx.stroke( );
+    
+    // Back Arm
+    const back_elbow = {
+      x: shoulders.x + Math.cos( angles.main + angles.back_arm[ 0 ] + Math.PI / 2 ),
+      y: shoulders.y + Math.sin( angles.main + angles.back_arm[ 0 ] + Math.PI / 2 )
+    };
+    const back_hand = {
+      x: back_elbow.x + Math.cos( angles.main + angles.back_arm[ 0 ] + angles.back_arm[ 1 ] + Math.PI / 2 ),
+      y: back_elbow.y + Math.sin( angles.main + angles.back_arm[ 0 ] + angles.back_arm[ 1 ] + Math.PI / 2 )
+    };
+    ctx.beginPath( );
+    ctx.moveTo( ...camera.transform( shoulders.x, shoulders.y ) );
+    ctx.lineTo( ...camera.transform( back_elbow.x, back_elbow.y ) );
+    ctx.lineTo( ...camera.transform( back_hand.x, back_hand.y ) );
+    ctx.stroke( );
+    
+    // Front Arm
+    const front_elbow = {
+      x: shoulders.x + Math.cos( angles.main + angles.front_arm[ 0 ] + Math.PI / 2 ),
+      y: shoulders.y + Math.sin( angles.main + angles.front_arm[ 0 ] + Math.PI / 2 )
+    };
+    const front_hand = {
+      x: front_elbow.x + Math.cos( angles.main + angles.front_arm[ 0 ] + angles.front_arm[ 1 ] + Math.PI / 2 ),
+      y: front_elbow.y + Math.sin( angles.main + angles.front_arm[ 0 ] + angles.front_arm[ 1 ] + Math.PI / 2 )
+    };
+    ctx.beginPath( );
+    ctx.moveTo( ...camera.transform( shoulders.x, shoulders.y ) );
+    ctx.lineTo( ...camera.transform( front_elbow.x, front_elbow.y ) );
+    ctx.lineTo( ...camera.transform( front_hand.x, front_hand.y ) );
+    ctx.stroke( );
+    
+    ctx.lineWidth *= 3;
     
     // Head
-    ctx.lineWidth *= 2;
     ctx.beginPath( );
-    ctx.moveTo( ...camera.transform( player.x, player.y - 5 ) );
-    ctx.lineTo( ...camera.transform( player.x, player.y - 5 ) );
-    ctx.stroke( );
-  },
-  drawLeg( animationFrame ) {
-    const root = { x: player.x, y: player.y + 5 };
-    
-    const a = -( Math.sin( 4 * Math.PI * animationFrame ) - (3/2) ) / 6;
-    const b = a - ( Math.sin( 2 * Math.PI * animationFrame ) - 1 ) / 8;
-    
-    const knee = {
-      x: root.x + 5 * Math.cos( 2 * Math.PI * a ),
-      y: root.y + 5 * Math.sin( 2 * Math.PI * a )
-    };
-    
-    const foot = {
-      x: knee.x + 5 * Math.cos( 2 * Math.PI * b ),
-      y: knee.y + 5 * Math.sin( 2 * Math.PI * b )
-    };
-    
-    ctx.beginPath( );
-    ctx.moveTo( ...camera.transform( root.x, root.y ) );
-    ctx.lineTo( ...camera.transform( knee.x, knee.y ) );
-    ctx.lineTo( ...camera.transform( foot.x, foot.y ) );
+    ctx.moveTo( ...camera.transform( head.x, head.y ) );
+    ctx.lineTo( ...camera.transform( head.x, head.y ) );
     ctx.stroke( );
   }
 }
